@@ -1,29 +1,10 @@
-<!doctype html>
-<html lang="th">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111827">
-  <title>Member Link Hub</title>
-  <style>
-    :root{font-family:system-ui,-apple-system,sans-serif;color:#172033;background:#f4f6fa}
-    *{box-sizing:border-box}body{margin:0;padding:24px 16px}
-    main{max-width:720px;margin:8vh auto;background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:28px}
-    h1{margin:0 0 10px;font-size:28px}p{line-height:1.7;color:#536176}
-    .status{display:inline-block;padding:7px 12px;border-radius:99px;background:#e0f2fe;color:#075985;font-size:13px}
-  </style>
-</head>
-<body>
-  <main>
-    <span class="status">Starter project</span>
-    <h1>Member Link Hub</h1>
-    <p>ระบบสมาชิกและกระดานภารกิจ — โครงสร้างเริ่มต้นพร้อมต่อยอด LINE Login, ระบบสมาชิก, Publisher และ Admin Review</p>
-    <p id="health">กำลังตรวจสอบการเชื่อมต่อ...</p>
-  </main>
-  <script>
-    fetch('/api/health').then(r=>r.json()).then(d=>{
-      document.getElementById('health').textContent=d.ok?'เชื่อมต่อ Backend และฐานข้อมูลสำเร็จ':'Backend ยังตั้งค่าไม่ครบ';
-    }).catch(()=>{document.getElementById('health').textContent='ยังไม่สามารถเชื่อมต่อ Backend ได้';});
-  </script>
-</body>
-</html>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>Member Link Hub</title><style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#172033;background:#f3f5f9}*{box-sizing:border-box}body{margin:0}header{background:#172033;color:white;padding:18px max(18px,calc((100% - 900px)/2));display:flex;align-items:center;justify-content:space-between}main{max-width:900px;margin:24px auto;padding:0 16px}.panel{background:white;border:1px solid #e3e7ef;border-radius:16px;padding:18px;margin:14px 0}.muted{color:#64748b}.btn{border:0;border-radius:10px;padding:11px 15px;background:#172033;color:white;font:inherit;cursor:pointer}.btn.alt{background:#e8edf5;color:#172033}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}input,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;margin:6px 0 12px}h1{font-size:24px}h2{font-size:18px}.post{border:1px solid #e5e7eb;padding:14px;border-radius:12px;margin:10px 0}.hidden{display:none}.pill{display:inline-block;background:#e8edf5;padding:4px 9px;border-radius:99px;font-size:12px}
+</style></head><body><header><strong>Member Link Hub</strong><button class="btn alt" id="login">เข้าสู่ระบบด้วย LINE</button></header><main><section class="panel"><h1>ศูนย์รวมภารกิจสมาชิก</h1><p id="status" class="muted">กำลังตรวจสอบสถานะ...</p><div id="profile"></div></section><section class="panel"><h2>กระดานภารกิจ</h2><p class="muted">เข้าสู่ระบบและได้รับอนุมัติแล้วจึงจะรับภารกิจได้</p><div id="board"></div></section><section class="panel"><h2>ส่งหลักฐาน Shopee</h2><form id="evidence"><label>Claim ID</label><input name="claimId" required><label>ลิงก์สินค้า Shopee</label><input name="shopeeUrl" type="url" required><button class="btn">ส่งหลักฐาน</button></form><p id="evidenceResult" class="muted"></p></section><section class="panel"><h2>เครื่องมือผู้ดูแล</h2><button class="btn alt" id="adminLoad">โหลดรายการสมาชิก (Admin)</button><div id="adminData"></div></section></main><script>
+const $=s=>document.querySelector(s);let me=null;async function api(path,opts={}){const r=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(opts.headers||{})},...opts});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error?.message||'เกิดข้อผิดพลาด');return d}
+$('#login').onclick=()=>location.href='/api/auth/line';async function boot(){try{const d=await api('/api/auth/me');me=d.member;if(!me){$('#status').textContent='ยังไม่ได้เข้าสู่ระบบ';return}$('#login').textContent='ออกจากระบบ';$('#login').onclick=async()=>{await api('/api/auth/logout',{method:'POST'});location.reload()};$('#status').textContent=me.status==='active'?'บัญชีพร้อมใช้งาน':me.status==='pending'?'บัญชีกำลังรอผู้ดูแลอนุมัติ':'บัญชีถูกระงับ';$('#profile').innerHTML=`<span class="pill">${me.role}</span> ${me.displayName||''}`;if(me.status==='active')loadBoard()}catch(e){$('#status').textContent=e.message}}
+async function loadBoard(){try{const d=await api('/api/posts/board');$('#board').innerHTML=d.posts.length?d.posts.map(p=>`<article class="post"><b>${esc(p.title)}</b><p>${esc(p.description||'')}</p><p class="muted">${p.claim_count}/${p.participant_limit} คน · ${esc(p.owner_name||'')}</p><a href="${safeUrl(p.reel_url)}" target="_blank" rel="noopener">เปิด Facebook Reel</a><p><button class="btn claim" data-id="${p.id}">รับภารกิจ</button></p></article>`).join(''):'ยังไม่มีภารกิจที่เปิดรับ';document.querySelectorAll('.claim').forEach(b=>b.onclick=async()=>{try{const r=await api('/api/posts/claim',{method:'POST',body:JSON.stringify({postId:b.dataset.id})});alert('รับภารกิจแล้ว Claim ID: '+r.claimId);loadBoard()}catch(e){alert(e.message)}})}catch(e){$('#board').textContent=e.message}}
+$('#evidence').onsubmit=async e=>{e.preventDefault();try{const f=new FormData(e.target);const d=await api('/api/evidence',{method:'POST',body:JSON.stringify({claimId:f.get('claimId'),shopeeUrl:f.get('shopeeUrl')})});$('#evidenceResult').textContent='ส่งหลักฐานแล้ว เครดิตได้รับการบันทึก Evidence ID: '+d.evidenceId;e.target.reset()}catch(err){$('#evidenceResult').textContent=err.message}};
+$('#adminLoad').onclick=async()=>{try{const d=await api('/api/admin/members');$('#adminData').innerHTML=d.members.map(m=>`<p>${esc(m.display_name||m.id)} · ${m.role} · ${m.status} ${m.status==='pending'?`<button class="btn approve" data-id="${m.id}">อนุมัติ</button>`:''}</p>`).join('')||'ไม่มีสมาชิก';document.querySelectorAll('.approve').forEach(b=>b.onclick=async()=>{await api('/api/admin/members/approve',{method:'POST',body:JSON.stringify({memberId:b.dataset.id})});$('#adminLoad').click()})}catch(e){$('#adminData').textContent=e.message}};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function safeUrl(s){try{const u=new URL(s);return ['https:'].includes(u.protocol)?u.href:'#'}catch{return '#'}}boot();
+</script></body></html>
