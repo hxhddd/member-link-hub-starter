@@ -1,4 +1,4 @@
-[AGENTS.md](https://github.com/user-attachments/files/34248900/AGENTS.md)
+[Uploading AGENTS.md…]()
 # Project invariants
 - Preserve existing production D1 data. Never drop, rebuild, or apply fresh-install baseline SQL to the existing database.
 - Authenticate on the server; never trust a browser-supplied member ID or role.
