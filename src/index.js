@@ -3,6 +3,8 @@ import { authRoutes } from './routes/auth.js';
 import { postsRoutes } from './routes/posts.js';
 import { evidenceRoutes } from './routes/evidence.js';
 import { adminRoutes } from './routes/admin.js';
+import { notificationRoutes } from './routes/notifications.js';
+import { runInactivitySweep } from './jobs/inactivity.js';
 const cors={ 'Access-Control-Allow-Methods':'GET,POST,PATCH,OPTIONS', 'Access-Control-Allow-Headers':'Content-Type', 'Vary':'Origin' };
 function withHeaders(response){const h=new Headers(response.headers);for(const [k,v] of Object.entries(cors))h.set(k,v);return new Response(response.body,{status:response.status,statusText:response.statusText,headers:h});}
 export default {async fetch(request,env){const url=new URL(request.url);if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});try{
@@ -12,7 +14,9 @@ export default {async fetch(request,env){const url=new URL(request.url);if(reque
  if(!response&&url.pathname.startsWith('/api/posts'))response=await postsRoutes(request,env);
  if(!response&&url.pathname.startsWith('/api/evidence'))response=await evidenceRoutes(request,env);
  if(!response&&url.pathname.startsWith('/api/admin'))response=await adminRoutes(request,env);
+ if(!response&&url.pathname.startsWith('/api/notifications'))response=await notificationRoutes(request,env);
  if(!response&&url.pathname.startsWith('/api/'))response=fail('NOT_FOUND','API route not found',404);
  if(!response)response=await env.ASSETS.fetch(request);
  return withHeaders(response);
- }catch(err){console.error('Request failed',err);return withHeaders(fail('INTERNAL_ERROR','เกิดข้อผิดพลาดภายในระบบ',500));}}};
+ }catch(err){console.error('Request failed',err);return withHeaders(fail('INTERNAL_ERROR','เกิดข้อผิดพลาดภายในระบบ',500));}},
+ async scheduled(controller,env,ctx){ctx.waitUntil(runInactivitySweep(env));}};
