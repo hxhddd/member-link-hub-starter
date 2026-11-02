@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "check": "node --check src/index.js && node --check src/lib/auth.js && node --check src/routes/auth.js && node --check src/routes/posts.js && node --check src/routes/evidence.js && node --check src/routes/admin.js"
+    "check": "node --check src/index.js && node --check src/lib/auth.js && node --check src/lib/activity.js && node --check src/routes/auth.js && node --check src/routes/posts.js && node --check src/routes/evidence.js && node --check src/routes/admin.js && node --check src/routes/notifications.js && node --check src/jobs/inactivity.js",
+    "test": "node --test"
   },
   "devDependencies": { "wrangler": "^4.0.0" }
 }
