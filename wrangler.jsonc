@@ -5,5 +5,6 @@
   "compatibility_date": "2026-10-15",
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": "./public", "binding": "ASSETS", "not_found_handling": "single-page-application" },
+  "triggers": { "crons": ["10 0 * * *"] },
   "d1_databases": [{ "binding": "DB", "database_name": "member-link-hub-db", "database_id": "d3491596-417f-4537-8568-6ab0fe08aa50" }]
 }
